@@ -72,7 +72,14 @@ GET /api/v1/products?page=1&page_size=20&sort_by=price&order=desc&search=keyboar
 }
 ```
 
-Other product routes: `GET /products/{id}`, `PATCH /products/{id}`, `DELETE /products/{id}`.
+Other product routes: `GET /products/{id}`, `PUT /products/{id}`, `PATCH /products/{id}`,
+`DELETE /products/{id}`.
+
+### Update
+
+`PATCH /products/{id}` applies a partial update (send only the fields you want to change).
+`PUT /products/{id}` replaces the product and requires the full set of fields (`name`, `sku`,
+`price`, `quantity_in_stock`), same validation as create. Both return `200 OK` with the product.
 
 ### Delete (soft / archive)
 
@@ -174,6 +181,21 @@ Returns the order with its `items` (each including the nested `product`) and the
 PATCH /api/v1/orders/10/status
 { "status": "shipped" }
 ```
+
+### Cancel (restores stock)
+
+```http
+DELETE /api/v1/orders/10
+```
+
+```json
+200 OK
+{ "success": true, "message": "Order cancelled successfully" }
+```
+
+Cancelling sets the order's status to `cancelled` and returns each item's quantity to product
+stock, preserving the order record for history. Cancelling an already-cancelled order returns a
+`422` validation error.
 
 ---
 

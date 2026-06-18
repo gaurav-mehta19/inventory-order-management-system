@@ -1,8 +1,10 @@
-import { ArrowLeft, Mail, Phone } from 'lucide-react';
+import { ArrowLeft, Ban, Mail, Phone } from 'lucide-react';
+import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { PageHeader } from '@/components/ui/PageHeader';
 import {
@@ -22,7 +24,7 @@ import {
   TableRow,
 } from '@/components/ui/Table';
 import { OrderStatusBadge } from '@/features/orders/components/OrderStatusBadge';
-import { useOrder, useUpdateOrderStatus } from '@/features/orders/hooks';
+import { useCancelOrder, useOrder, useUpdateOrderStatus } from '@/features/orders/hooks';
 import { STATUS_LABEL } from '@/features/orders/status';
 import { useToast } from '@/hooks/useToast';
 import { ORDER_STATUSES, type OrderStatus } from '@/types/domain';
@@ -36,6 +38,8 @@ export function OrderDetailPage() {
 
   const orderQuery = useOrder(orderId);
   const statusMutation = useUpdateOrderStatus();
+  const cancelMutation = useCancelOrder();
+  const [confirmCancel, setConfirmCancel] = useState(false);
 
   const handleStatusChange = async (status: OrderStatus) => {
     if (!orderId) return;
@@ -44,6 +48,17 @@ export function OrderDetailPage() {
       toast.success('Status updated', `Order #${orderId} is now ${STATUS_LABEL[status]}.`);
     } catch (error) {
       toast.error(error, 'Unable to update status');
+    }
+  };
+
+  const handleCancel = async () => {
+    if (!orderId) return;
+    try {
+      await cancelMutation.mutateAsync(orderId);
+      setConfirmCancel(false);
+      toast.success('Order cancelled', `Order #${orderId} was cancelled and stock restored.`);
+    } catch (error) {
+      toast.error(error, 'Unable to cancel order');
     }
   };
 
@@ -173,10 +188,44 @@ export function OrderDetailPage() {
                   </Select>
                 </CardContent>
               </Card>
+
+              {orderQuery.data.status !== 'cancelled' ? (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Cancel order</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <p className="text-sm text-muted-foreground">
+                      Cancelling marks the order as cancelled and returns its items to stock.
+                    </p>
+                    <Button
+                      variant="destructive"
+                      className="w-full"
+                      onClick={() => setConfirmCancel(true)}
+                      disabled={cancelMutation.isPending}
+                    >
+                      <Ban className="h-4 w-4" aria-hidden />
+                      Cancel order
+                    </Button>
+                  </CardContent>
+                </Card>
+              ) : null}
             </div>
           </div>
         </>
       )}
+
+      <ConfirmDialog
+        open={confirmCancel}
+        onOpenChange={setConfirmCancel}
+        title="Cancel order"
+        description="This marks the order as cancelled and returns its items to stock. This cannot be undone."
+        confirmLabel="Cancel order"
+        cancelLabel="Keep order"
+        destructive
+        loading={cancelMutation.isPending}
+        onConfirm={() => void handleCancel()}
+      />
     </div>
   );
 }

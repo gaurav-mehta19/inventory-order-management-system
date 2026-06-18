@@ -59,6 +59,28 @@ def test_update_to_existing_sku_raises(product_service: ProductService) -> None:
         product_service.update(second.id, ProductUpdate(sku="a-1"))
 
 
+def test_replace_product_overwrites_all_fields(product_service: ProductService) -> None:
+    product = product_service.create(_payload(sku="rep-1", name="Original"))
+
+    replaced = product_service.replace(
+        product.id,
+        _payload(sku="rep-2", name="Replaced", quantity_in_stock=7),
+    )
+
+    assert replaced.id == product.id
+    assert replaced.name == "Replaced"
+    assert replaced.sku == "REP-2"
+    assert replaced.quantity_in_stock == 7
+
+
+def test_replace_product_rejects_duplicate_sku(product_service: ProductService) -> None:
+    product_service.create(_payload(sku="rep-a"))
+    second = product_service.create(_payload(sku="rep-b"))
+
+    with pytest.raises(DuplicateSKUException):
+        product_service.replace(second.id, _payload(sku="rep-a"))
+
+
 def test_delete_product_removes_it(product_service: ProductService) -> None:
     product = product_service.create(_payload(sku="del-1"))
 

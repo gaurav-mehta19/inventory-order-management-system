@@ -1,5 +1,5 @@
 import { apiRequest } from '@/api/client';
-import type { ListQuery, Page } from '@/types/api';
+import type { ListQuery, MessageResponse, Page } from '@/types/api';
 import type { Order, OrderDetail, OrderStatus } from '@/types/domain';
 
 export type OrderListParams = Partial<ListQuery> & {
@@ -34,4 +34,8 @@ export function updateOrderStatus(id: number, status: OrderStatus) {
     method: 'PATCH',
     body: { status },
   });
+}
+
+export function cancelOrder(id: number) {
+  return apiRequest<MessageResponse>(`/orders/${id}`, { method: 'DELETE' });
 }

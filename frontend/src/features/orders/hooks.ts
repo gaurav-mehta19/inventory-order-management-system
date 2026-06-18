@@ -4,6 +4,7 @@ import { queryKeys } from '@/api/queryKeys';
 import type { OrderStatus } from '@/types/domain';
 
 import {
+  cancelOrder,
   createOrder,
   fetchOrder,
   fetchOrders,
@@ -48,6 +49,18 @@ export function useUpdateOrderStatus() {
     onSuccess: (order) => {
       queryClient.setQueryData(queryKeys.orders.detail(order.id), order);
       void queryClient.invalidateQueries({ queryKey: queryKeys.orders.all });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.dashboard });
+    },
+  });
+}
+
+export function useCancelOrder() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => cancelOrder(id),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.orders.all });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
       void queryClient.invalidateQueries({ queryKey: queryKeys.dashboard });
     },
   });

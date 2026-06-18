@@ -42,6 +42,11 @@ class OrderRepository(BaseRepository[Order]):
         products = self.session.execute(statement).scalars().all()
         return {product.id: product for product in products}
 
+    def lock_products_for_restock(self, product_ids: Sequence[int]) -> dict[int, Product]:
+        statement = select(Product).where(Product.id.in_(product_ids)).with_for_update()
+        products = self.session.execute(statement).scalars().all()
+        return {product.id: product for product in products}
+
     def search(
         self,
         *,

@@ -4,7 +4,7 @@ from fastapi import APIRouter, Query, status
 
 from src.api.dependencies import OrderServiceDep, PaginationDep, SortDep
 from src.models.order import OrderStatus
-from src.schemas.common import Page
+from src.schemas.common import MessageResponse, Page
 from src.schemas.order import (
     OrderCreate,
     OrderDetail,
@@ -52,3 +52,9 @@ def update_order_status(
     order_id: int, payload: OrderStatusUpdate, service: OrderServiceDep
 ) -> OrderDetail:
     return OrderDetail.model_validate(service.update_status(order_id, payload.status))
+
+
+@router.delete("/{order_id}", response_model=MessageResponse)
+def cancel_order(order_id: int, service: OrderServiceDep) -> MessageResponse:
+    service.cancel(order_id)
+    return MessageResponse(message="Order cancelled successfully")

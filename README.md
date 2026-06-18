@@ -265,8 +265,9 @@ Base URL: `/api/v1`
 | GET    | `/products`               | List (page, page_size, sort_by, order, search) |
 | POST   | `/products`               | Create product                           |
 | GET    | `/products/{id}`          | Get product                              |
-| PATCH  | `/products/{id}`          | Update product                           |
-| DELETE | `/products/{id}`          | Delete product                           |
+| PUT    | `/products/{id}`          | Replace product (full update)            |
+| PATCH  | `/products/{id}`          | Update product (partial)                 |
+| DELETE | `/products/{id}`          | Archive product (soft delete)            |
 | GET    | `/customers`              | List customers                           |
 | POST   | `/customers`              | Create customer                          |
 | GET    | `/customers/{id}`         | Get customer                             |
@@ -276,6 +277,7 @@ Base URL: `/api/v1`
 | POST   | `/orders`                 | Create order (atomic stock reservation)  |
 | GET    | `/orders/{id}`            | Order detail with items + customer       |
 | PATCH  | `/orders/{id}/status`     | Update order status                      |
+| DELETE | `/orders/{id}`            | Cancel order (restores stock)            |
 
 Full request/response examples live in [`docs/API.md`](docs/API.md).
 

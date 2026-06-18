@@ -97,6 +97,30 @@ class OrderService:
         logger.info("order.status_updated", extra={"order_id": order_id, "status": status.value})
         return self.get(order_id)
 
+    def cancel(self, order_id: int) -> None:
+        try:
+            order = self.repository.get(order_id)
+            if order is None:
+                raise OrderNotFoundException(order_id)
+            if order.status == OrderStatus.CANCELLED:
+                raise ValidationException("Order is already cancelled")
+
+            products = self.repository.lock_products_for_restock(
+                [item.product_id for item in order.items]
+            )
+            for item in order.items:
+                product = products.get(item.product_id)
+                if product is not None:
+                    product.quantity_in_stock += item.quantity
+
+            order.status = OrderStatus.CANCELLED
+            self.session.commit()
+        except Exception:
+            self.session.rollback()
+            raise
+
+        logger.info("order.cancelled", extra={"order_id": order_id})
+
     @staticmethod
     def _aggregate_quantities(items: Sequence[OrderItemCreate]) -> dict[int, int]:
         aggregated: dict[int, int] = {}

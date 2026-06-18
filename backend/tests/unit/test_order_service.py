@@ -6,7 +6,9 @@ from sqlalchemy.orm import Session
 from src.exceptions import (
     CustomerNotFoundException,
     InsufficientInventoryException,
+    OrderNotFoundException,
     ProductNotFoundException,
+    ValidationException,
 )
 from src.models.order import OrderStatus
 from src.schemas.customer import CustomerCreate
@@ -165,3 +167,50 @@ def test_update_status_transitions_order(
     updated = orders.update_status(order.id, OrderStatus.SHIPPED)
 
     assert updated.status == OrderStatus.SHIPPED
+
+
+def test_cancel_order_restores_stock_and_marks_cancelled(
+    services: tuple[ProductService, CustomerService, OrderService],
+) -> None:
+    products, customers, orders = services
+    product_id = _seed_product(products, "ord-cancel", stock=10, price="12.00")
+    customer_id = _seed_customer(customers)
+    order = orders.create(
+        OrderCreate(
+            customer_id=customer_id,
+            items=[OrderItemCreate(product_id=product_id, quantity=4)],
+        )
+    )
+    assert products.get(product_id).quantity_in_stock == 6
+
+    orders.cancel(order.id)
+
+    assert orders.get(order.id).status == OrderStatus.CANCELLED
+    assert products.get(product_id).quantity_in_stock == 10
+
+
+def test_cancel_unknown_order_raises(
+    services: tuple[ProductService, CustomerService, OrderService],
+) -> None:
+    _, _, orders = services
+
+    with pytest.raises(OrderNotFoundException):
+        orders.cancel(4242)
+
+
+def test_cancel_already_cancelled_order_raises(
+    services: tuple[ProductService, CustomerService, OrderService],
+) -> None:
+    products, customers, orders = services
+    product_id = _seed_product(products, "ord-twice", stock=5, price="8.00")
+    customer_id = _seed_customer(customers)
+    order = orders.create(
+        OrderCreate(
+            customer_id=customer_id,
+            items=[OrderItemCreate(product_id=product_id, quantity=1)],
+        )
+    )
+    orders.cancel(order.id)
+
+    with pytest.raises(ValidationException):
+        orders.cancel(order.id)

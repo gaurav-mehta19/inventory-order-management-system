@@ -48,6 +48,13 @@ def update_product(
     return ProductRead.model_validate(service.update(product_id, payload))
 
 
+@router.put("/{product_id}", response_model=ProductRead)
+def replace_product(
+    product_id: int, payload: ProductCreate, service: ProductServiceDep
+) -> ProductRead:
+    return ProductRead.model_validate(service.replace(product_id, payload))
+
+
 @router.delete("/{product_id}", response_model=MessageResponse)
 def delete_product(product_id: int, service: ProductServiceDep) -> MessageResponse:
     service.delete(product_id)

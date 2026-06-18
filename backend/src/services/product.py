@@ -72,6 +72,9 @@ class ProductService:
         logger.info("product.updated", extra={"product_id": product.id})
         return product
 
+    def replace(self, product_id: int, payload: ProductCreate) -> Product:
+        return self.update(product_id, ProductUpdate(**payload.model_dump()))
+
     def delete(self, product_id: int) -> None:
         product = self.get(product_id)
         product.deleted_at = datetime.now(UTC)
