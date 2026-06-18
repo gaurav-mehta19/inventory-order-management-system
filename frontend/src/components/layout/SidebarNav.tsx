@@ -42,13 +42,6 @@ export function SidebarNav({ onNavigate }: SidebarNavProps) {
           </NavLink>
         ))}
       </nav>
-
-      <div className="mt-auto rounded-lg border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
-        <p className="font-medium text-foreground">Need the API?</p>
-        <p className="mt-1">
-          Explore endpoints at <span className="font-mono">/docs</span>.
-        </p>
-      </div>
     </div>
   );
 }
