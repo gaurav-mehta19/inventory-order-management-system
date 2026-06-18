@@ -1,0 +1,19 @@
+name: Keep backend warm
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: keep-warm
+  cancel-in-progress: true
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping backend health endpoint
+        run: |
+          curl -fsS --retry 5 --retry-all-errors --max-time 90 \
+            https://inventory-order-management-system-ass6.onrender.com/health

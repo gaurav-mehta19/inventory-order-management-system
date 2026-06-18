@@ -10,9 +10,17 @@ interface ErrorStateProps {
   title?: string;
 }
 
+const WAKING_MESSAGE = 'The server is waking up — this can take up to a minute. Please try again.';
+
 function resolveMessage(error: unknown): string {
   if (error instanceof ApiError) {
+    if (error.status === 502 || error.status === 503 || error.status === 504) {
+      return WAKING_MESSAGE;
+    }
     return error.message;
+  }
+  if (error instanceof TypeError) {
+    return 'Could not reach the server. Check your connection and try again.';
   }
   if (error instanceof Error) {
     return error.message;
