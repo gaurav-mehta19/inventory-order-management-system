@@ -5,9 +5,9 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: inventory
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-inventory}
     ports:
       - '5432:5432'
     volumes:
@@ -15,7 +15,8 @@ services:
     networks:
       - app_network
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U postgres -d inventory']
+      test:
+        ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-inventory}']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -31,7 +32,7 @@ services:
         condition: service_healthy
     environment:
       ENVIRONMENT: production
-      DATABASE_URL: postgresql+psycopg://postgres:postgres@postgres:5432/inventory
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-inventory}
       CORS_ORIGINS: http://localhost:8080
       LOG_JSON: 'true'
       LOG_LEVEL: INFO

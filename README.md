@@ -126,7 +126,7 @@ owns persistence, and the **database** enforces invariants with constraints. See
 │       ├── store/         # Zustand UI state (theme, sidebar)
 │       ├── types/         # Shared types
 │       └── theme/         # Tailwind tokens + globals
-├── docs/                   # Architecture, database, API, deployment guides
+├── docs/                   # Architecture, database, and API guides
 ├── docker-compose.yml
 └── setup.sh                # Generates backend/.env and frontend/.env
 ```
@@ -179,7 +179,8 @@ docker compose down                    # stop and remove containers (add -v to d
 ## Local development (without Docker)
 
 The Docker workflow above is all you need to run the project. This section is only for running the
-services natively on your machine (e.g. for fast hot-reload outside containers). First generate the
+services natively on your machine (e.g. for fast hot-reload outside containers). Run locally, the
+**backend listens on port `8000`** and the **frontend dev server on port `5173`**. First generate the
 env files:
 
 ```bash
@@ -247,7 +248,7 @@ mypy src
 
 # Frontend — unit tests (Vitest) + checks
 cd frontend
-npm run test            # or: npm run test:coverage
+npm run test         
 npm run lint
 npm run typecheck
 npm run build
@@ -288,4 +289,3 @@ Full request/response examples live in [`docs/API.md`](docs/API.md).
 - [Architecture & design decisions](docs/ARCHITECTURE.md)
 - [Database schema & ER diagram](docs/DATABASE.md)
 - [API reference & examples](docs/API.md)
-- [Deployment guide](docs/DEPLOYMENT.md)
